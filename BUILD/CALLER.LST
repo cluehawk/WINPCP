@@ -1,0 +1,68 @@
+Microsoft (R) Macro Assembler Version 5.10A                 1/30/26 16:25:24
+                                                             Page     1-1
+
+
+				; CALLER.ASM - MASM 5.1 friendly
+				; Builds a small DOS EXE, calls FAR PASCAL rout
+				ine, exits with AL as ERRORLEVEL.
+				
+				.286
+				.MODEL small
+				.STACK 256
+				
+				EXTRN AddWords:FAR PROC
+caller.asm(8): warning A4001: Extra characters on line
+				
+				.CODE
+ 0000				start:
+ 0000  B8 ---- R		        mov ax, @data
+ 0003  8E D8			        mov ds, ax
+				
+				        ; PASCAL pushes args left-to-right (a t
+				hen b)
+ 0005  6A 02			        push 2
+ 0007  6A 03			        push 3
+ 0009  9A 0000 ---- E		        call AddWords         ; FAR call, AX sh
+				ould be 5
+				
+ 000E  B4 4C			        mov ah, 4Ch
+ 0010  CD 21			        int 21h
+				
+				END start
+Microsoft (R) Macro Assembler Version 5.10A                 1/30/26 16:25:24
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _DATA  . . . . . . . . . . . .  	0000	WORD	PUBLIC	'DATA'
+  STACK  . . . . . . . . . . . .  	0100	PARA	STACK	'STACK'
+_TEXT  . . . . . . . . . . . . .  	0012	WORD	PUBLIC	'CODE'
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+ADDWORDS . . . . . . . . . . . .  	L FAR 	0000		External
+
+START  . . . . . . . . . . . . .  	L NEAR	0000	_TEXT
+
+@CODE  . . . . . . . . . . . . .  	TEXT  _TEXT		
+@CODESIZE  . . . . . . . . . . .  	TEXT  0		
+@CPU . . . . . . . . . . . . . .  	TEXT  1287		
+@DATASIZE  . . . . . . . . . . .  	TEXT  0		
+@FILENAME  . . . . . . . . . . .  	TEXT  caller		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+     23 Source  Lines
+     23 Total   Lines
+     19 Symbols
+
+  47090 + 461802 Bytes symbol space free
+
+      1 Warning Errors
+      0 Severe  Errors

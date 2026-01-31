@@ -1,0 +1,31 @@
+; WINPCP.DEF - module definition for Windows 3.x display driver
+
+NAME    WINPCP
+DESCRIPTION 'Plantronics Color Plus display driver (640x200x4)'
+
+; Windows display drivers are NE modules with a fixed export set.
+; We'll align ordinals to match CGA/TANDY where practical.
+
+EXPORTS
+    ; Core lifecycle
+    Enable          @1
+    Disable         @2
+    Inquire         @3
+    Control         @4
+    DeviceMode      @5
+
+    ; Drawing (stubs initially)
+    BitBlt          @6
+    PatBlt          @7
+    Pixel           @8
+    LineTo          @9
+    ScanLR          @10
+
+    ; Text
+    StrBlt          @11
+    ExtTextOut      @14
+
+    ; Cursor (names may vary; adjust once we lock the exact set)
+    SetCursor       @15
+    MoveCursor      @16
+    CheckCursor     @17

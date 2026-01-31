@@ -1,0 +1,73 @@
+Microsoft (R) Macro Assembler Version 5.10A                 1/30/26 16:25:24
+                                                             Page     1-1
+
+
+				; WINOBJ.ASM
+				; Minimal Windows-style callable routine:
+				; FAR + PASCAL calling convention (callee pops 
+				args)
+				
+				; WINOBJ.ASM - MASM 5.1 friendly (uses BP for s
+				tack args)
+				
+				.286
+				.MODEL large, PASCAL
+				
+				.CODE
+				PUBLIC AddWords
+				
+ 0000				AddWords PROC FAR
+ 0000  55			        push bp
+ 0001  8B EC			        mov  bp, sp
+				
+				        ; FAR call stack layout after "push bp 
+				/ mov bp,sp":
+				        ; [bp+0]  saved BP
+				        ; [bp+2]  return IP
+				        ; [bp+4]  return CS
+				        ; [bp+6]  a
+				        ; [bp+8]  b
+				
+ 0003  8B 46 06			        mov  ax, [bp+6]
+ 0006  03 46 08			        add  ax, [bp+8]
+				
+ 0009  5D			        pop  bp
+ 000A  CA 0004			        retf 4              ; pop args (2 words
+				)
+ 000D				AddWords ENDP
+				
+				END
+Microsoft (R) Macro Assembler Version 5.10A                 1/30/26 16:25:24
+                                                             Symbols-1
+
+
+Segments and Groups:
+
+                N a m e         	Length	 Align	Combine Class
+
+DGROUP . . . . . . . . . . . . .  	GROUP
+  _DATA  . . . . . . . . . . . .  	0000	WORD	PUBLIC	'DATA'
+WINOBJ_TEXT  . . . . . . . . . .  	000D	WORD	PUBLIC	'CODE'
+
+Symbols:            
+
+                N a m e         	Type	 Value	 Attr
+
+ADDWORDS . . . . . . . . . . . .  	F PROC	0000	WINOBJ_TEXT	Global	Length = 000D
+
+@CODE  . . . . . . . . . . . . .  	TEXT  winobj_TEXT		
+@CODESIZE  . . . . . . . . . . .  	TEXT  1		
+@CPU . . . . . . . . . . . . . .  	TEXT  1287		
+@DATASIZE  . . . . . . . . . . .  	TEXT  1		
+@FILENAME  . . . . . . . . . . .  	TEXT  winobj		
+@VERSION . . . . . . . . . . . .  	TEXT  510		
+
+
+     31 Source  Lines
+     31 Total   Lines
+     17 Symbols
+
+  46972 + 461920 Bytes symbol space free
+
+      0 Warning Errors
+      0 Severe  Errors
