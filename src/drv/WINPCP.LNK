@@ -1,0 +1,10 @@
+/NOD
+/NOE
+/ALIGN:16
+winpcp.obj+
+..\stubs.obj+
+..\text\text_entry.obj+
+..\text\text_core.obj
+..\..\bin\WINPCP.DRV
+nul
+WINPCP.DEF
