@@ -5,7 +5,7 @@
 ;   - ExtTextOut (ordinal 14)
 ;
 ; Phase 1 baseline: NEC V20 allowed (.186)
-; Calling convention: FAR PASCAL (callee pops args using RETF n)
+; Calling convention: FAR (Win3 display drivers are caller-clean: use plain RETF)
 ; =====================================================================
 
 .186
@@ -82,7 +82,7 @@ ExtTextOut proc far
 
     mov     sp, bp
     pop     bp
-    retf    40
+    retf 
 
 eto_draw:
     ; Tailcall into core (core will retf 40)

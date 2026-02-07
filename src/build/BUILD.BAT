@@ -8,18 +8,18 @@ REM Go to the driver build directory
 cd /d %~dp0\..\drv
 
 REM Assemble core driver module
-%MASM% winpcp.asm;
+%MASM% /l winpcp.asm;
 if errorlevel 1 goto fail
 
 REM Assemble common export stubs (lifecycle, BitBlt stubs, cursor stubs, etc.)
-%MASM% ..\stubs.asm;
+%MASM% /l ..\stubs.asm;
 if errorlevel 1 goto fail
 
 REM Assemble text modules
-%MASM% ..\text\text_entry.asm;
+%MASM% /l ..\text\text_entry.asm;
 if errorlevel 1 goto fail
 
-%MASM% ..\text\text_core.asm;
+%MASM% /l ..\text\text_core.asm;
 if errorlevel 1 goto fail
 
 REM Link using response file

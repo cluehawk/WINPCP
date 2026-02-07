@@ -7,25 +7,34 @@ DESCRIPTION 'Plantronics Color Plus display driver (640x200x4)'
 ; We'll align ordinals to match CGA/TANDY where practical.
 
 EXPORTS
-    ; Core lifecycle
-    Enable          @1
-    Disable         @2
-    Inquire         @3
-    Control         @4
-    DeviceMode      @5
+    BITBLT              @1
+    COLORINFO           @2
+    CONTROL             @3
+    DISABLE             @4
+    ENABLE              @5
+    ENUMDFONTS          @6
+    ENUMOBJ             @7
+    OUTPUT              @8
+    PIXEL               @9
+    REALIZEOBJECT       @10
+    STRBLT              @11
+    SCANLR              @12
+    DEVICEMODE          @13
+    EXTTEXTOUT          @14
+    GETCHARWIDTH        @15
+    DEVICEBITMAP        @16
+    FASTBORDER          @17
+    SETATTRIBUTE        @18
+    DEVICEBITMAPBITS    @19
+    CREATEBITMAP        @20
+    DIBSCREENBLT        @21
 
-    ; Drawing (stubs initially)
-    BitBlt          @6
-    PatBlt          @7
-    Pixel           @8
-    LineTo          @9
-    ScanLR          @10
+    DO_POLYLINES        @90
+    DO_SCANLINES        @91
 
-    ; Text
-    StrBlt          @11
-    ExtTextOut      @14
+    INQUIRE             @101
+    SETCURSOR           @102
+    MOVECURSOR          @103
+    CHECKCURSOR         @104
 
-    ; Cursor (names may vary; adjust once we lock the exact set)
-    SetCursor       @15
-    MoveCursor      @16
-    CheckCursor     @17
+    USERREPAINTDISABLE  @500

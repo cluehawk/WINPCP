@@ -3,6 +3,8 @@
 /reference/CGA/
 /reference/Device_Driver_Adaptation_Guide_Version_3.0.pdf
 /reference/Windows_3.0_DDK_Pre-Release_Release_Notes.pdf
+/BUILD/
+/status/
 *.OBJ
 *.LST
 *.MAP

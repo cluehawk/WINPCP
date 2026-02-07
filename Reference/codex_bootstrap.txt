@@ -21,10 +21,12 @@ WORKSPACE ASSUMPTIONS
 - Additional DDK notes are located at reference/Windows_3.0_DDK_Pre-Release_Release_Notes.pdf
 - You must prefer authoritative definitions from that DDK over guessing (structures, exports, calling conventions).
 
-REFERENCE DRIVER NOTE
+REFERENCE DRIVER NOTES
 - TANDYDSP.DRV is a Windows 2.x–era display driver (commonly used under Windows 3.0 real mode) and does NOT fully represent the Windows 3.0 display-driver ABI. 
   Use it strictly as a behavioral reference for 640x200x4 rendering (text expansion, blit behavior, color usage), but validate all exports, ordinals, structures, and calling conventions against the Windows 3.0 DDK before implementing or relying on them.
-
+- CGA.DRV is a native Windows 3.0 display driver and represents the correct Windows 3.0 display-driver ABI, export set, and calling conventions.
+  Use CGA.DRV as the authoritative reference for required entrypoints, ordinals, GDI integration, and lifecycle behavior.
+  Its hardware behavior (2-color CGA framebuffer) differs from Plantronics and should not be copied directly, but its driver structure and ABI expectations are valid for WINPCP.
 
 PROJECT STRUCTURE (CURRENT)
 - drv/ contains: winpcp.asm, winpcp.def, winpcp.lnk (driver entry/export glue)
