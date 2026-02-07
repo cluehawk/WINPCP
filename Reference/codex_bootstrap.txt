@@ -1,0 +1,61 @@
+You are Codex working in the WINPCP repository (Windows 3.0 display driver for Plantronics ColorPlus / Twinhead CT-6190G class hardware).
+
+PRIMARY GOAL
+- Implement a Windows 3.0 display driver targeting Plantronics 640x200x4 first (and later extend).
+- Use TANDYDSP.DRV as a behavioral reference, but treat it as a Win 2.x-era driver; validate all Win 3.0 display-driver exports/structures/ordinals against the Win 3.0 DDK.
+- Use Plantronics hardware notes as the hardware truth for ports + VRAM layout.
+
+CPU / INSTRUCTION BASELINE (VERY IMPORTANT)
+- All assembly must be compatible with Intel 80186 and NEC V20.
+- Do NOT use 80286+ instructions or addressing modes.
+- Avoid 32-bit registers and any 386+ features.
+- When unsure about an instruction’s availability, choose a simpler 8086/186-safe alternative.
+- MASM version baseline: MASM 5.10A syntax.
+- Prefer these instructions only: MOV, PUSH, POP, XCHG, ADD, SUB, INC, DEC, AND, OR, XOR, SHL, SHR, ROL, ROR, CMP, TEST, JMP, Jcc, CALL, RET, LOOP, REP, STOS, LODS.
+- Avoid ENTER/LEAVE, PUSH imm16, IMUL forms not supported on 8086/186.
+
+WORKSPACE ASSUMPTIONS
+- You are running locally in this repo, not GitHub-only.
+- A local Windows 3.0 DDK is available in: third_party/win3ddk/ (gitignored; still readable).
+- The Device Driver Adaption guide for window 3.0 is located at reference/Device_Driver_Adaptation_Guide_Version_3.0.pdf
+- Additional DDK notes are located at reference/Windows_3.0_DDK_Pre-Release_Release_Notes.pdf
+- You must prefer authoritative definitions from that DDK over guessing (structures, exports, calling conventions).
+
+REFERENCE DRIVER NOTE
+- TANDYDSP.DRV is a Windows 2.x–era display driver (commonly used under Windows 3.0 real mode) and does NOT fully represent the Windows 3.0 display-driver ABI. 
+  Use it strictly as a behavioral reference for 640x200x4 rendering (text expansion, blit behavior, color usage), but validate all exports, ordinals, structures, and calling conventions against the Windows 3.0 DDK before implementing or relying on them.
+
+
+PROJECT STRUCTURE (CURRENT)
+- drv/ contains: winpcp.asm, winpcp.def, winpcp.lnk (driver entry/export glue)
+- text/ contains: text_core.asm, text_entry.asm (text output / glyph expansion)
+- inc/ contains shared include files
+- stubs.asm contains required exported stubs or placeholders
+- Reference docs are in reference/ and hardware notes include Plantronics_Color_Plus Video Modes.txt
+- Plantronics_Color_Plus Video Modes.txt is located in reference/Hardware/
+
+HARD RULES FOR CHANGES
+- Make changes as small, reviewable commits. Prefer minimal diffs.
+- Never break the build harness. If you change build scripts, update them consistently.
+- Don’t invent magic constants: search the repo and third_party/win3ddk/ for definitions first.
+- If you need data from a binary driver (CGA.DRV / TANDYDSP.DRV), do not assume: propose a method to extract exports/behavior, or add notes, but don’t fabricate results.
+- TANDYSDP.DRV and related files are located in reference/Tandy/
+- CGA.DRV and related files are located in reference/CGA/
+- Reverse engineered notes are located in reference/Third_Party_Notes/
+- Do not micro-optimize or rewrite working loops unless explicitly requested.
+- Correctness and ABI fidelity are more important than speed.
+- Binary drivers in reference/ are for behavior comparison only.
+- Never copy binary-derived constants directly into code without documenting provenance.
+- If an ABI detail or structure layout is unclear after searching the DDK, stop and ask before proceeding.
+
+
+WHAT TO DO FIRST IN A NEW SESSION
+1) Read: drv/winpcp.asm, drv/winpcp.def, drv/winpcp.lnk, stubs.asm, and text/*.asm
+2) Summarize current build outputs + missing exports/entrypoints.
+3) Identify the minimal “driver loads” milestone and implement only what’s needed to reach it.
+4) Keep 640x200x4 mode-set and VRAM primitives isolated in a small hardware module.
+
+OUTPUT STYLE
+- When proposing code edits: show exact filenames + patch-like snippets.
+- When proposing new files: include full file contents.
+- Always mention any CPU/ABI risks and how you avoided them.

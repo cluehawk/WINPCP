@@ -1,0 +1,183 @@
+\WINPCP
+¦   .gitignore
+¦   LICENSE
+¦   README.md
+¦
++---BUILD
+¦       B.BAT
+¦       CALLER.ASM
+¦       CALLER.EXE
+¦       CALLER.LST
+¦       CALLER.MAP
+¦       CALLER.OBJ
+¦       test.asm
+¦       TEST.OBJ
+¦       WINOBJ.ASM
+¦       WINOBJ.LST
+¦       WINOBJ.OBJ
+¦
++---docs
+¦   +---notes
+¦   +---references
++---Reference
+¦   ¦   codex_bootstrap.txt
+¦   ¦   Device_Driver_Adaptation_Guide_Version_3.0.pdf
+¦   ¦   Windows_3.0_DDK_Pre-Release_Release_Notes.pdf
+¦   ¦
+¦   +---CGA
+¦   ¦       CGA.DRV
+¦   ¦       CGA.GR2
+¦   ¦       CGAFIX.FON
+¦   ¦       CGALOGO.LGO
+¦   ¦       CGALOGO.RLE
+¦   ¦       CGAOEM.FON
+¦   ¦       CGASYS.FON
+¦   ¦
+¦   +---Hardware
+¦   ¦       Plantronics_Color_Plus Video Modes.txt
+¦   ¦
+¦   +---Tandy
+¦   ¦       About Tandy Driver.txt
+¦   ¦       TANDYDSP.DRV
+¦   ¦       TANDYDSP.GRB
+¦   ¦       TANDYDSP.LGO
+¦   ¦
+¦   +---Third_Party_Notes
+¦           CGA_Tandy_Driver_reverse_engineer_Details.txt
+¦           GEM driver pla_drv source.txt
+¦
++---src
+¦   ¦   STUBS.ASM
+¦   ¦
+¦   +---build
+¦   ¦       BUILD.BAT
+¦   ¦
+¦   +---drv
+¦   ¦       winpcp.asm
+¦   ¦       WINPCP.DEF
+¦   ¦       WINPCP.LNK
+¦   ¦
+¦   +---inc
+¦   ¦       cga_interleave.inc
+¦   ¦       CPU_ABS.INC
+¦   ¦
+¦   +---text
+¦           TEXT_CORE.ASM
+¦           TEXT_ENTRY.ASM
+¦
++---tests
+¦   +---dos
+¦   +---win3
++---third_party
+    +---win3ddk
+        +---comm
+		+---display
+		¦   +---1plane
+		¦   ¦   +---bitblt
+		¦   ¦   +---bltincs
+		¦   ¦   +---bw
+		¦   ¦   ¦   +---cgaherc
+		¦   ¦   ¦   ¦   +---cga
+		¦   ¦   ¦   ¦   +---compaq
+		¦   ¦   ¦   ¦   +---herc
+		¦   ¦   ¦   +---ega
+		¦   ¦   ¦       +---egahibw
+		¦   ¦   ¦       +---egamono
+		¦   ¦   ¦       +---mcga
+		¦   ¦   +---logo
+		¦   ¦   +---rc-high
+		¦   ¦   +---rc-low
+		¦   ¦   +---rc-med
+		¦   +---4plane
+		¦   ¦   +---bitblt
+		¦   ¦   +---color
+		¦   ¦   ¦   +---ega
+		¦   ¦   ¦       +---egahires
+		¦   ¦   ¦       +---vga
+		¦   ¦   +---rc-high
+		¦   ¦   +---rc-med
+		¦   +---8plane
+		¦       +---8514
+		¦       ¦   +---resource
+		¦       ¦   +---source
+		¦       +---v7
+		¦           +---res
+		¦               +---96x96
+		+---ebios
+		+---fonts
+		¦   +---fixed
+		¦   ¦   +---8514
+		¦   ¦   +---cga
+		¦   ¦   +---ega
+		¦   ¦   +---vga
+		¦   +---system
+		¦       +---8514
+		¦       +---cga
+		¦       +---ega
+		¦       +---vga
+		+---grabbers
+		¦   +---cgaherc
+		¦   ¦   +---cga
+		¦   ¦   +---hercules
+		¦   +---ega
+		¦   ¦   +---egacolor
+		¦   ¦   +---egamono
+		¦   +---vga
+		¦       +---vgacolor
+		¦       +---vgamono
+		+---include
+		+---keyboard
+		¦   +---tables
+		¦       +---mt
+		+---lib
+		¦   +---c51
+		+---mouse
+		+---net
+		+---pageswap
+		+---printers
+		¦   +---finstall
+		¦   ¦   +---ink
+		¦   ¦   +---rc
+		¦   ¦   +---src
+		¦   +---hppcl
+		¦   ¦   +---fnt
+		¦   ¦   +---ink
+		¦   ¦   +---rc
+		¦   ¦   ¦   +---intl
+		¦   ¦   ¦   +---pcm
+		¦   ¦   +---src
+		¦   +---pscript
+		¦   ¦   +---res
+		¦   ¦   +---resource
+		¦   ¦   +---utils
+		¦   +---raster
+		¦       +---color
+		¦       ¦   +---ibmcolor
+		¦       +---epson
+		+---setup
+		+---sound
+		+---tests
+		¦   +---dta
+		¦   +---hct
+		¦   +---ite
+		¦   ¦   +---bin
+		¦   ¦   +---disptest
+		¦   ¦   +---docs
+		¦   ¦   +---inc
+		¦   ¦   +---isg_test
+		¦   ¦   +---prnttest
+		¦   ¦       +---frame
+		¦   +---nettest
+		¦   ¦   +---bin
+		¦   ¦   +---src
+		¦   +---print
+		¦       +---basic
+		¦       +---fonts
+		¦       +---qad
+		+---tools
+		+---vddcga
+		+---vddega
+		+---vddherc
+		+---vdmad
+		+---vhd
+		+---vkd 

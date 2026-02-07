@@ -1,0 +1,279 @@
+# Windows 3.0 TANDYDSP.DRV Reverse-Engineering — Handoff Summary
+
+**Purpose:**
+Reverse-engineer the Windows 3.0 **TANDYDSP.DRV** display driver to extract the **exact GDI contract, VRAM layout, BitBlt engine, and text rendering behavior**, in order to build a **Plantronics ColorPlus 640×200×4** compatible Windows 3.0 display driver.
+
+**Status:**
+Reverse engineering is **complete for all critical drawing paths**, including **BitBlt** and **text rendering (StrBlt / ExtTextOut)**.
+
+---
+
+## 1. Windows 3.0 Display Driver Contract (Corrected)
+
+### INQUIRE
+
+* **Does NOT report capabilities**
+* Returns **CURSORINFO only** (mouse scaling)
+* Tandy copies exactly **4 bytes**
+
+### ENABLE (style & 1)
+
+This is where **capabilities are reported**.
+
+#### GDIINFO (0x68 bytes, pre-Win3 format)
+
+Key values reported by Tandy:
+
+| Field           | Value        |             |                  |
+| --------------- | ------------ | ----------- | ---------------- |
+| Resolution      | 640 × 200    |             |                  |
+| dpPlanes        | 2            |             |                  |
+| dpBitsPixel     | 1            |             |                  |
+| Total bpp       | 2 (4 colors) |             |                  |
+| dpNumColors     | 4            |             |                  |
+| dpRaster        | `RC_BITBLT   | RC_BITMAP64 | RC_GDI20_OUTPUT` |
+| No DIBs         | True         |             |                  |
+| No palette mgmt | True         |             |                  |
+
+**Implication:**
+A Plantronics driver should initially report **identical GDIINFO** for compatibility.
+
+---
+
+## 2. ENABLE(EnableDevice): Physical Device Object
+
+* ENABLE returns a **BITMAP structure**, not a custom device struct.
+* Tandy copies **0x20 bytes** from a static template.
+* No per-device state is allocated.
+
+Decoded BITMAP:
+
+| Field        | Value                          |
+| ------------ | ------------------------------ |
+| bmType       | `0xB800` (OEM display surface) |
+| bmWidth      | 640                            |
+| bmHeight     | 200                            |
+| bmWidthBytes | 80                             |
+| bmPlanes     | 2                              |
+| bmBitsPixel  | 1                              |
+| bmBits       | `B800:0000`                    |
+
+No fields are patched after copy.
+
+---
+
+## 3. VRAM Layout (Critical Result)
+
+### CGA-Style Interleaved Banks in B800h
+
+| Plane   | Scanline parity | Offset |
+| ------- | --------------- | ------ |
+| Plane 0 | Even            | 0000h  |
+| Plane 0 | Odd             | 2000h  |
+| Plane 1 | Even            | 4000h  |
+| Plane 1 | Odd             | 6000h  |
+
+* Each bank = **8 KB**
+* Total VRAM footprint = **32 KB**
+* Plane selection = **bank base offset**, not a hardware register
+
+### Addressing Formula
+
+```
+byte = x >> 3
+row  = (y >> 1) * 80
+odd  = y & 1
+addr = bankBase[plane*2 + odd] + row + byte
+```
+
+This layout matches:
+
+* CGA interleave rules
+* GEM Plantronics driver
+* Plantronics 640×200×4 hardware behavior
+
+---
+
+## 4. Scanline Stepping (“Magic Delta”)
+
+Due to CGA interleave:
+
+### Forward drawing
+
+* even → odd: `+2000h`
+* odd → next even: `-1FB0h`  (`-2000h + 80`)
+
+### Backward drawing (overlap-safe)
+
+* odd → even(prev): `-2000h`
+* even → odd(prev): `+1FB0h`
+
+Used consistently by:
+
+* PIXEL
+* SCANLR
+* BITBLT
+* TEXT rendering
+
+---
+
+## 5. BITBLT Architecture
+
+### Overall Design
+
+* Heavy **setup phase**:
+
+  * clipping
+  * overlap detection
+  * ROP decode
+  * masks & shifts
+* Then **JIT-generates a tiny inner loop on the stack**
+* Executes inner loop:
+
+  * once for **plane 0**
+  * once for **plane 1**
+
+Planes are **never bit-interleaved** — always processed independently.
+
+### SRCCOPY (Aligned)
+
+If `(srcX & 7) == (dstX & 7)`:
+
+* Left partial byte (mask)
+* Middle full bytes
+* Right partial byte
+* Advance scanline using CGA delta
+
+### SRCCOPY (Misaligned)
+
+If `(srcX & 7) != (dstX & 7)`:
+
+* Combines two source bytes:
+
+  ```
+  out = (a << sh) | (b >> (8 - sh))
+  ```
+* Same left/middle/right masking
+* Same per-plane execution
+* Same scanline stepping
+
+No Plantronics-specific changes required.
+
+---
+
+## 6. Supported Raster Operations
+
+Tandy supports the classic Win3 **16-mix** ROP family:
+
+* SRCCOPY
+* SRCINVERT
+* SRCAND
+* SRCPAINT
+* SRCERASE
+* NOTSRCCOPY
+* NOTSRCERASE
+* DSTINVERT
+* BLACKNESS / WHITENESS
+* PATCOPY / PATINVERT / PATPAINT
+* MERGECOPY / MERGEPAINT
+
+---
+
+## 7. Text Rendering: StrBlt / ExtTextOut (Fully Decoded)
+
+### Entry Points
+
+* `STRBLT` (ordinal 11): **wrapper only**
+* `EXTTEXTOUT` (ordinal 14): **real implementation**
+
+`STRBLT` pushes default arguments and tail-calls `ExtTextOut`.
+
+---
+
+## 8. Glyph Expansion Engine (Core Result)
+
+### Rendering Model
+
+* Fonts are 1-bpp glyph bitmaps.
+* Glyph bits are expanded into **two independent 1-bpp planes**.
+* Rendering is done via **mask-replace**, not OR/XOR.
+
+### Plane Mapping
+
+4-color pixel → two planes:
+
+| Color | Plane 1 | Plane 0 |
+| ----- | ------- | ------- |
+| 0     | 0       | 0       |
+| 1     | 0       | 1       |
+| 2     | 1       | 0       |
+| 3     | 1       | 1       |
+
+### DrawMode → Plane Fill Bytes
+
+For foreground (TextColor) and background (BkColor):
+
+```c
+fg0 = (TextColor & 1) ? 0xFF : 0x00;
+fg1 = (TextColor & 2) ? 0xFF : 0x00;
+bg0 = (BkColor  & 1) ? 0xFF : 0x00;
+bg1 = (BkColor  & 2) ? 0xFF : 0x00;
+```
+
+### Core Write Primitive (per plane)
+
+```
+dst = (dst & ~mask) | (mask & plane_fill)
+```
+
+* `mask` comes from shifted glyph bits
+* `plane_fill` is `00h` or `FFh`
+
+### OPAQUE vs TRANSPARENT
+
+* **OPAQUE:** background written where glyph bits = 0
+* **TRANSPARENT:** only glyph bits = 1 are written
+
+### Scanline stepping uses the same CGA interleave deltas as BitBlt.
+
+---
+
+## 9. What Is Hardware-Specific vs Reusable
+
+### Must Change for Plantronics
+
+1. **Mode enable**
+
+   * BIOS mode 5
+   * `OUT 3DDh, 20h` (Plantronics 640×200×4)
+2. **Palette programming** (fixed CGA/Plantronics palettes)
+
+### Can Be Reused Verbatim
+
+* GDIINFO
+* BITMAP device model
+* VRAM addressing math
+* CGA interleave stepping
+* BitBlt engines
+* Text glyph expansion logic
+* Plane-pass rendering model
+
+---
+
+## 10. Implementation Guidance for Plantronics Driver
+
+* Treat Plantronics 640×200×4 as **Tandy-compatible 2-plane CGA**
+* Keep all rendering logic identical
+* Only swap:
+
+  * mode setup
+  * palette interpretation
+* Do **not** linearize Y
+* Do **not** interleave planes bitwise
+* Use mask-replace writes for text
+
+---
+
+**Conclusion:**
+The TANDYDSP.DRV driver provides a **complete, correct reference implementation** for a Plantronics Windows 3.0 display driver. All drawing paths — BitBlt and text — rely purely on **byte-level VRAM math and CGA interleave**, making them directly portable.
+
