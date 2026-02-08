@@ -11,6 +11,11 @@
 ;   These stubs therefore use plain RETF (no stack pop).
 ; =====================================================================
 
+.186
+
+_TEXT segment word public 'CODE'
+assume cs:_TEXT
+
 public  STRBLT, EXTTEXTOUT
 public  BITBLT, COLORINFO, CONTROL, DISABLE, ENABLE
 public  ENUMDFONTS, ENUMOBJ, OUTPUT, PIXEL, REALIZEOBJECT
@@ -23,12 +28,14 @@ public  USERREPAINTDISABLE
 
 ; --- Wrappers for text entrypoints implemented in TEXT_ENTRY.ASM ---
 ; (TEXT_ENTRY.ASM currently defines StrBlt and ExtTextOut)
+
+
 STRBLT proc far
-    jmp StrBlt
+    jmp NEAR PTR StrBlt_Impl
 STRBLT endp
 
 EXTTEXTOUT proc far
-    jmp ExtTextOut
+    jmp NEAR PTR ExtTextOut_Impl
 EXTTEXTOUT endp
 
 ; --- CGA-aligned exports (stubs) ---
@@ -187,3 +194,5 @@ USERREPAINTDISABLE proc far
     xor dx, dx
     retf
 USERREPAINTDISABLE endp
+
+_TEXT ends

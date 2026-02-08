@@ -6,12 +6,13 @@
 
 .186
 .model large, pascal
+.stack 1024
 
 ; Put shared equates/includes here later if needed:
 ; include ..\inc\whatever.inc
 
-include ..\src\STUBS.ASM
-include ..\src\text\TEXT_ENTRY.ASM
-include ..\src\text\TEXT_CORE.ASM
+include STUBS.ASM
+include ..\text\TXTENT.ASM
+include ..\text\TXTCORE.ASM
 
 end

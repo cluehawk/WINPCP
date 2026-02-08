@@ -1,34 +1,41 @@
 @echo off
-setlocal
 
-set MASM=masm
-set LINK=link
+rem ------------------------------------------------------------
+rem DOSBox / COMMAND.COM safe build script for WINPCP
+rem Assumes project is mounted as E:\WINPCP
+rem ------------------------------------------------------------
 
-REM Go to the driver build directory
-cd /d %~dp0\..\drv
+set PROJ=E:\SRC
+set DRV=E:\SRC\DRV
 
-REM Assemble core driver module
-%MASM% /l winpcp.asm;
-if errorlevel 1 goto fail
+rem Ensure we can see sources
+if not exist %DRV%\WINPCP.ASM goto NOFILES
 
-REM Assemble common export stubs (lifecycle, BitBlt stubs, cursor stubs, etc.)
-%MASM% /l ..\stubs.asm;
-if errorlevel 1 goto fail
+cd %DRV%
 
-REM Assemble text modules
-%MASM% /l ..\text\text_entry.asm;
-if errorlevel 1 goto fail
+echo Assembling WINPCP.ASM...dir
 
-%MASM% /l ..\text\text_core.asm;
-if errorlevel 1 goto fail
+masm /l WINPCP.ASM;
 
-REM Link using response file
-%LINK% @winpcp.lnk
-if errorlevel 1 goto fail
+if errorlevel 1 goto FAIL
 
-echo Build OK: ..\..\bin\WINPCP.DRV
-goto :eof
+echo Linking WINPCP...
+link /NOD /NOE @WINPCP.LNK 
 
-:fail
-echo Build FAILED
-exit /b 1
+if errorlevel 1 goto FAIL
+
+echo.
+echo BUILD OK.
+goto END
+
+:NOFILES
+echo ERROR: Can't find %DRV%\WINPCP.ASM
+goto END
+
+:FAIL
+echo.
+echo BUILD FAILED.
+cd ..\build
+goto END
+
+:END

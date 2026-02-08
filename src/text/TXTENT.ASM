@@ -9,23 +9,20 @@
 ; =====================================================================
 
 .186
-.model large
 
-public  StrBlt
-public  ExtTextOut
-
-extrn   Text_RenderStringPlantronics:FAR
+public  StrBlt_Impl
+public  ExtTextOut_Impl
 
 _TEXT segment word public 'CODE'
 assume cs:_TEXT
 
 ; ---------------------------------------------------------------------
-; StrBlt tailcalls ExtTextOut after pushing ExtTextOut extras:
+; StrBlt_Impl tailcalls ExtTextOut after pushing ExtTextOut extras:
 ;   lpCharWidths : DWORD = 0
 ;   lpOpaqueRect : DWORD = 0
 ;   Options      : WORD  = 0
 ; ---------------------------------------------------------------------
-StrBlt proc far
+StrBlt_Impl proc far
     ; Preserve original FAR return address
     pop     cx              ; return IP
     pop     bx              ; return CS
@@ -47,11 +44,11 @@ StrBlt proc far
     push    bx              ; CS
     push    cx              ; IP
 
-    jmp     ExtTextOut
-StrBlt endp
+    jmp     ExtTextOut_Impl
+StrBlt_Impl endp
 
 ; ---------------------------------------------------------------------
-; ExtTextOut wrapper:
+; ExtTextOut_Impl wrapper:
 ; - checks Count
 ; - if Count < 0: return failure for now
 ; - else: tail-jump into core implementation
@@ -68,7 +65,7 @@ StrBlt endp
 ;   [bp+22] Count      (WORD)   <-- THIS IS THE IMPORTANT FIX
 ;   ... (rest)
 ; ---------------------------------------------------------------------
-ExtTextOut proc far
+ExtTextOut_Impl proc far
     push    bp
     mov     bp, sp
 
@@ -85,11 +82,11 @@ ExtTextOut proc far
     retf 
 
 eto_draw:
-    ; Tailcall into core (core will retf 40)
+    ; Tailcall into core 
     mov     sp, bp
     pop     bp
     jmp     Text_RenderStringPlantronics
-ExtTextOut endp
+ExtTextOut_Impl endp
 
 _TEXT ends
-end
+
